@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  chartmuseum-auth:
+  - apiVersion: v2
+    appVersion: 1.1.0
+    created: "2021-01-28T21:10:07.380355344Z"
+    description: A Helm chart for ChartMuseum Auth server.
+    digest: b5ef945c5332dd9a9f02bdc678c713ebb2e0708716ea740c7930f92b1dfe1032
+    name: chartmuseum-auth
+    type: application
+    urls:
+    - https://github.com/craftech-io/helm-charts/releases/download/chartmuseum-auth-0.1.1/chartmuseum-auth-0.1.1.tgz
+    version: 0.1.1
+generated: "2021-01-28T21:10:07.273929701Z"
