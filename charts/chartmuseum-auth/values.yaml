@@ -1,7 +1,9 @@
 replicaCount: 1
 
-masterKey: "ePh4tearai8aev0"
+# Password for authenticating to chartmuseum
+masterKey: "eea#$DME8aev0EXAMPLE"
 
+# Location for private key
 privateKeyPath: "/config/server.pem/server.key"
 
 image:
@@ -13,6 +15,7 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: "chartmuseum-auth"
 
+# Private key mount
 extraVolumes:
     - type: secret
       name: chartmuseum-public-key
@@ -33,7 +36,7 @@ ingress:
   annotations: 
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"
-  host: chartmuseum-auth.mgt.moni.com.ar
+  host: chartmuseum-auth.example.com
   tls:
     enabled: true
 
