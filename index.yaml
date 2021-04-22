@@ -11,4 +11,39 @@ entries:
     urls:
     - https://github.com/craftech-io/helm-charts/releases/download/chartmuseum-auth-0.1.1/chartmuseum-auth-0.1.1.tgz
     version: 0.1.1
-generated: "2021-01-28T21:10:07.273929701Z"
+  - apiVersion: v2
+    appVersion: 1.1.0
+    created: "2021-04-22T21:47:59.824721978Z"
+    description: A Helm chart for ChartMuseum Auth server.
+    digest: 03de23f445881d0a4826562c6cb334553e696313505f23a712f84e5681631b50
+    name: chartmuseum-auth
+    type: application
+    urls:
+    - https://github.com/craftech-io/helm-charts/releases/download/chartmuseum-auth-0.1.1-push/chartmuseum-auth-0.1.1-push.tgz
+    version: 0.1.1-push
+  ingress-nginx:
+  - annotations:
+      artifacthub.io/changes: |
+        - Add ability to specify jobLabel for ServiceMonitor
+    apiVersion: v2
+    appVersion: 0.45.0
+    created: "2021-04-22T21:47:59.923607863Z"
+    description: Ingress controller for Kubernetes using NGINX as a reverse proxy
+      and load balancer
+    digest: 7bff51cc33be52b5730ce7297763a154fd6dc73ece00fea0b0765de8243d16ac
+    home: https://github.com/kubernetes/ingress-nginx
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nginx_logo.svg/500px-Nginx_logo.svg.png
+    keywords:
+    - ingress
+    - nginx
+    kubeVersion: '>=1.16.0-0'
+    maintainers:
+    - name: ChiefAlexander
+    name: ingress-nginx
+    sources:
+    - https://github.com/kubernetes/ingress-nginx
+    type: application
+    urls:
+    - https://github.com/craftech-io/helm-charts/releases/download/ingress-nginx-3.29.0-ingress-class/ingress-nginx-3.29.0-ingress-class.tgz
+    version: 3.29.0-ingress-class
+generated: "2021-04-22T21:47:59.923618363Z"
