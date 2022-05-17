@@ -26,7 +26,9 @@ global:
 web:
   enabled: false
 
-  varsSecretName: ""
+  #### If you don't use external-secrets then the default value will be:
+  ## "{{ .Values.global.projectName }}-secrets"
+  varsSecretName: argo-rollouts-demo-secrets
 
   #### Configure Datadog Unified Service Tagging with Kubernetes Labels
   ## https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging?tab=kubernetes
