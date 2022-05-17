@@ -1,0 +1,9 @@
+apiVersion: v2
+name: argo-rollouts-demo
+version: 0.0.1
+appVersion: latest
+keywords:
+  - argo-rollouts
+  - nodejs
+description: >
+    This Chart is to deploy an extendible architecture of a NodeJS application over K8s with Argo Rollouts. 
