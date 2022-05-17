@@ -84,7 +84,7 @@ spec:
           {{- if .Values.global.externalSecrets.enabled }}
               name: {{ .Values.global.projectName }}-secrets
           {{ else }}
-              name: {{ .Values.web.varsSecretName | default "null" | quote }}
+              name: {{ .Values.web.varsSecretName | quote }}
           {{- end }}
           env:
             - name: POD_IP
