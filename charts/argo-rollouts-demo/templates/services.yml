@@ -1,0 +1,127 @@
+{{- if and (eq (.Values.web.enabled | toString) "true" ) (eq (.Values.web.service.enabled | toString) "true") }}
+---
+{{- if and (eq (.Values.web.service.enabled | toString) "true" ) (eq (.Values.rollout.strategy | toString) "canary") }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "project.fullname" . }}-root-svc
+  {{ if .Values.global.namespace }}
+  namespace: {{ .Values.global.namespace }}
+  {{ else }}
+  namespace: {{ .Release.Namespace }}
+  {{ end }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+spec:
+  ports:
+  - port: {{ .Values.web.service.port }}
+    targetPort: {{ .Values.web.service.targetPort }}
+  selector:
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "project.fullname" . }}-stable-svc
+  {{ if .Values.global.namespace }}
+  namespace: {{ .Values.global.namespace }}
+  {{ else }}
+  namespace: {{ .Release.Namespace }}
+  {{ end }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+spec:
+  ports:
+  - port: {{ .Values.web.service.port }}
+    targetPort: {{ .Values.web.service.targetPort }}
+  selector:
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "project.fullname" . }}-canary-svc
+  {{ if .Values.global.namespace }}
+  namespace: {{ .Values.global.namespace }}
+  {{ else }}
+  namespace: {{ .Release.Namespace }}
+  {{ end }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+spec:
+  ports:
+  - port: {{ .Values.web.service.port }}
+    targetPort: {{ .Values.web.service.targetPort }}
+  selector:
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+---
+{{- if and (eq (.Values.web.service.enabled | toString) "true" ) (eq (.Values.rollout.strategy | toString) "blueGreen") }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "project.fullname" . }}-stable-svc
+  {{ if .Values.global.namespace }}
+  namespace: {{ .Values.global.namespace }}
+  {{ else }}
+  namespace: {{ .Release.Namespace }}
+  {{ end }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+spec:
+  ports:
+  - port: {{ .Values.web.service.port }}
+    targetPort: {{ .Values.web.service.targetPort }}
+  selector:
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "project.fullname" . }}-preview-svc
+  {{ if .Values.global.namespace }}
+  namespace: {{ .Values.global.namespace }}
+  {{ else }}
+  namespace: {{ .Release.Namespace }}
+  {{ end }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+spec:
+  ports:
+  - port: {{ .Values.web.service.port }}
+    targetPort: {{ .Values.web.service.targetPort }}
+  selector:
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+---
+{{- end }}

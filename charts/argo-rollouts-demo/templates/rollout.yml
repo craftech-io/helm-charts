@@ -1,0 +1,223 @@
+{{- if .Values.web.enabled -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ template "project.fullname" . }}-app
+  {{ if .Values.global.namespace }}
+  namespace: {{ .Values.global.namespace }}
+  {{ else }}
+  namespace: {{ .Release.Namespace }}
+  {{ end }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- template "web.labels" . }}
+spec:
+  # Number of desired pods.
+  # Defaults to 1.
+  replicas: {{ .Values.rollout.replicas | default "1" }}
+
+  {{- if .Values.rollout.analysis }}
+  analysis:
+    # limits the number of successful analysis runs and experiments to be stored in a history
+    # Defaults to 5.
+    successfulRunHistoryLimit: {{ .Values.rollout.analysis.successfulRunHistoryLimit | default "10" }}
+    # limits the number of unsuccessful analysis runs and experiments to be stored in a history. 
+    # Stages for unsuccessful: "Error", "Failed", "Inconclusive"
+    # Defaults to 5.
+    unsuccessfulRunHistoryLimit: {{ .Values.rollout.analysis.unsuccessfulRunHistoryLimit | default "10" }}
+  {{- end }}
+  
+  # Label selector for pods. Existing ReplicaSets whose pods are selected by
+  # this will be the ones affected by this rollout. It must match the pod
+  # template's labels.  
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+  # Template describes the pods that will be created. Same as deployment
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+        app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion }}
+        {{- template "web.template.labels" . }}
+      {{- template "web.template.annotations" . }}      
+    spec:
+      {{ template "web.affinity" . }}
+      {{ template "web.nodeselector" . }}
+      terminationGracePeriodSeconds: {{ .Values.web.terminationGracePeriodSeconds | default 300 }}
+      containers:
+        - name: {{ template "project.fullname" . }}
+          image: {{ .Values.global.image.repository }}:{{ .Values.global.image.tag }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          {{- if .Values.web.livenessProbe.enabled }}
+          livenessProbe:
+            {{- if eq .Values.web.livenessProbe.type "tcp" }}
+            tcpSocket:
+              port: {{ .Values.web.service.targetPort }}
+            initialDelaySeconds: {{ .Values.web.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.web.livenessProbe.periodSeconds }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.web.readinessProbe.enabled }}
+          readinessProbe:
+            {{- if eq .Values.web.readinessProbe.type "http" }}
+            httpGet:
+              path: {{ .Values.web.readinessProbe.path }}
+              port: {{ .Values.web.service.targetPort }}
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.web.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.web.readinessProbe.periodSeconds }}
+            {{- end }}
+          {{- end }}
+          {{ template "web.resources" . }}
+          envFrom:
+          - secretRef:
+          {{- if .Values.global.externalSecrets.enabled }}
+              name: {{ .Values.global.projectName }}-secrets
+          {{ else }}
+              name: {{ .Values.web.varsSecretName | default "null" | quote }}
+          {{- end }}
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP          
+          {{- if .Values.global.datadog.enabled }}
+            - name: DATADOG_TRACE_AGENT_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: DD_ENV
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/env']
+            - name: DD_SERVICE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/service']
+            - name: DD_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/version']                  
+          {{- end -}}
+          {{- if .Values.global.datadog.enabled }}
+          volumeMounts:
+            - name: apmsocketpath
+              mountPath: /var/run/datadog                    
+      volumes:
+        - hostPath:
+            path: /var/run/datadog/
+          name: apmsocketpath
+          {{- end -}}
+         {{ template "web.volumes" . }}
+         {{ template "web.mounts" . }}
+
+  # Minimum number of seconds for which a newly created pod should be ready
+  # without any of its container crashing, for it to be considered available.
+  minReadySeconds: {{ .Values.rollout.minReadySeconds | default "null" }}
+
+  # The number of old ReplicaSets to retain.
+  revisionHistoryLimit: {{ .Values.rollout.revisionHistoryLimit }}
+
+  # Pause allows a user to manually pause a rollout at any time. A rollout
+  # will not advance through its steps while it is manually paused, but HPA
+  # auto-scaling will still occur. Typically not explicitly set the manifest,
+  # but controlled via tools (e.g. kubectl argo rollouts pause). If true at
+  # initial creation of Rollout, replicas are not scaled up automatically
+  # from zero unless manually promoted.
+  paused: {{ .Values.rollout.paused }}
+
+  # The maximum time in seconds in which a rollout must make progress during
+  # an update, before it is considered to be failed. Argo Rollouts will
+  # continue to process failed rollouts and a condition with a
+  # ProgressDeadlineExceeded reason will be surfaced in the rollout status.
+  # Note that progress will not be estimated during the time a rollout is
+  # paused.
+  # Defaults to 600s
+  progressDeadlineSeconds: {{ .Values.rollout.progressDeadlineSeconds }}  
+
+  # Whether to abort the update when ProgressDeadlineSeconds
+  # is exceeded if analysis or experiment is not used.
+  # Optional and default is false.
+  progressDeadlineAbort: {{ .Values.rollout.progressDeadlineAbort }}
+
+  {{- if .Values.rollout.blueGreen.restartAt }}
+  # UTC timestamp in which a Rollout should sequentially restart all of
+  # its pods. Used by the `kubectl argo rollouts restart ROLLOUT` command.
+  # The controller will ensure all pods have a creationTimestamp greater
+  # than or equal to this value. Example "2020-03-30T21:19:35Z"
+  restartAt: {{ .Values.rollout.restartAt | quote }} 
+  {{- end }}
+
+  strategy:
+    # Steps define sequence of steps to take during an update of the
+    # canary. Skipped upon initial deploy of a rollout. +optional
+    {{- if eq .Values.rollout.strategy "blueGreen" }}
+    blueGreen: 
+      # activeService specifies the service to update with the new template hash at time of promotion.
+      # This field is mandatory for the blueGreen update strategy.
+      activeService: "{{ template "project.fullname" . }}-stable-svc"
+      # previewService specifies the service to update with the new template hash before promotion.
+      # This allows the preview stack to be reachable without serving production traffic.
+      # This field is optional.
+      previewService: "{{ template "project.fullname" . }}-preview-svc"
+      {{ template "blueGreen.previewReplicaCount" . }}
+      {{ template "blueGreen.autoPromotionEnabled" . }}
+      {{ template "blueGreen.autoPromotionSeconds" . }}
+      {{ template "blueGreen.scaleDownDelaySeconds" . }}
+      {{ template "blueGreen.scaleDownDelayRevisionLimit" . }}
+      {{ template "blueGreen.abortScaleDownDelaySeconds" . }}
+      {{ template "blueGreen.antiAffinity" . }}
+
+    {{- else if eq .Values.rollout.strategy "canary" }}
+    canary:
+    # https://argoproj.github.io/argo-rollouts/features/canary/
+      {{ template "canary.steps" . }}
+      # canaryService and stableService are references to Services which the Rollout will modify
+      # to target the canary ReplicaSet and stable ReplicaSet respectively (required).
+      canaryService: "{{ template "project.fullname" . }}-canary-svc"
+      stableService: "{{ template "project.fullname" . }}-stable-svc"
+      {{ template "canary.stableMetadata" . }}
+      {{ template "canary.canaryMetadata" . }}
+      {{ template "canary.dynamicStableScale" . }}
+      {{ template "canary.abortScaleDownDelaySeconds" . }}
+      {{ template "canary.maxUnavailable" . }}
+      {{ template "canary.maxSurge" . }}
+      {{ template "canary.scaleDownDelaySeconds" . }}
+      {{ template "canary.scaleDownDelayRevisionLimit" . }}
+      {{ template "canary.antiAffinity" . }}
+
+      # Traffic routing specifies the ingress controller or service mesh
+      # configuration to achieve advanced traffic splitting. If omitted,
+      # will achieve traffic split via a weighted replica counts between
+      # the canary and stable ReplicaSet.
+      trafficRouting:
+        alb:
+          # The referenced ingress will be injected with a custom action annotation, directing
+          # the AWS Load Balancer Controller to split traffic between the canary and stable
+          # Service, according to the desired traffic weight (required).
+          ingress: {{ template "project.fullname" . }}-app
+          # Reference to a Service that the Ingress must target in one of the rules (optional).
+          # If omitted, uses canary.stableService.
+          rootService: "{{ template "project.fullname" . }}-root-svc"         
+          # Service port is the port which the Service listens on (required).
+          servicePort: {{ .Values.web.service.port }}
+    {{- end }}
+{{- end }}

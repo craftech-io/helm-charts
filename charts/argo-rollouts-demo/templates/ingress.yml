@@ -1,0 +1,136 @@
+{{- if and (eq (.Values.rollout.strategy | toString) "canary") (eq (.Values.web.ingress.enabled | toString) "true")  }}
+{{- if and (eq (.Values.web.enabled | toString) "true" ) (eq (.Values.web.ingress.enabled | toString) "true") }}
+{{- $pathType :=  .Values.web.ingress.pathType | default "Prefix" -}}
+{{- $serviceName := include "project.fullname" . -}}
+{{- $servicePort := .Values.web.service.port -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ template "project.fullname" . }}-app
+  {{ if .Values.global.namespace }}
+  namespace: {{ .Values.global.namespace }}
+  {{ else }}
+  namespace: {{ .Release.Namespace }}
+  {{ end }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- template "web.ingress.annotations" . }}
+spec:
+  ingressClassName: {{ .Values.web.ingress.ingressClassName }}
+{{- if .Values.web.ingress.tls.enabled }}
+  tls:
+  {{- range .Values.web.ingress.hosts }}
+    - hosts:
+        - {{ .host | quote }}
+  {{- end }}
+{{- end }}
+  rules:
+  {{- range .Values.web.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+        {{- range (.paths | default (list "/")) }}
+          - path: {{ . }}
+            pathType: {{ $pathType }}
+            backend:
+              service:
+                name: {{ $serviceName }}-root-svc
+                port:
+                  number: {{ $servicePort }}
+        {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
+---
+{{- if and (eq (.Values.rollout.strategy | toString) "blueGreen") (eq (.Values.web.ingress.enabled | toString) "true")  }}
+{{- if and (eq (.Values.web.enabled | toString) "true" ) (eq (.Values.web.ingress.enabled | toString) "true") }}
+{{- $pathType :=  .Values.web.ingress.pathType | default "Prefix" -}}
+{{- $serviceName := include "project.fullname" . -}}
+{{- $servicePort := .Values.web.service.port -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ template "project.fullname" . }}-app
+  {{ if .Values.global.namespace }}
+  namespace: {{ .Values.global.namespace }}
+  {{ else }}
+  namespace: {{ .Release.Namespace }}
+  {{ end }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- template "web.ingress.annotations" . }}
+spec:
+  ingressClassName: {{ .Values.web.ingress.ingressClassName }}
+{{- if .Values.web.ingress.tls.enabled }}
+  tls:
+  {{- range .Values.web.ingress.hosts }}
+    - hosts:
+        - {{ .host | quote }}
+  {{- end }}
+{{- end }}
+  rules:
+  {{- range .Values.web.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+        {{- range (.paths | default (list "/")) }}
+          - path: {{ . }}
+            pathType: {{ $pathType }}
+            backend:
+              service:
+                name: {{ $serviceName }}-stable-svc
+                port:
+                  number: {{ $servicePort }}
+         {{- end }}
+  {{- end }}
+---
+{{- $pathType :=  .Values.rollout.blueGreen.ingressPreview.pathType | default "Prefix" -}}
+{{- $serviceName := include "project.fullname" . -}}
+{{- $servicePort := .Values.web.service.port -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ template "project.fullname" . }}-preview-app
+  {{ if .Values.global.namespace }}
+  namespace: {{ .Values.global.namespace }}
+  {{ else }}
+  namespace: {{ .Release.Namespace }}
+  {{ end }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/name: {{ template "project.fullname" . }}-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- template "blueGreen.ingressPreview.annotations" . }}
+spec:
+  ingressClassName: {{ .Values.rollout.blueGreen.ingressPreview.ingressClassName }}
+{{- if .Values.rollout.blueGreen.ingressPreview.tls.enabled }}
+  tls:
+  {{- range .Values.rollout.blueGreen.ingressPreview.hosts }}
+    - hosts:
+        - {{ .host | quote }}
+  {{- end }}
+{{- end }}
+  rules:
+  {{- range .Values.rollout.blueGreen.ingressPreview.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+        {{- range (.paths | default (list "/")) }}
+          - path: {{ . }}
+            pathType: {{ $pathType }}
+            backend:
+              service:
+                name: {{ $serviceName }}-preview-svc
+                port:
+                  number: {{ $servicePort }}
+        {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,224 @@
+global:
+  # enabled is the master enabled switch. Setting this to true or false
+  # will enable or disable all the components within this chart by default.
+  enabled: true
+  # Used to define custom fullname in template.
+  projectName: "argo-rollouts-demo"
+  clusterName: "minikube"
+  # image sets the repo,tag and pullPolicy of the project
+  image:
+    repository: "ecr/example"
+    tag: latest
+    pullPolicy: Always
+  # Namespace where release will be deployed
+  namespace: "example"
+  # True if external secrets should be used
+  externalSecrets:
+    enabled: false
+    review: false
+    clusterName: ""
+  # True if Datadog APM should be used
+  datadog:
+    enabled: false
+
+#######################       APPLICATION SCOPES       #######################################################################    
+
+web:
+  enabled: false
+
+  varsSecretName: ""
+
+  #### Configure Datadog Unified Service Tagging with Kubernetes Labels
+  ## https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging?tab=kubernetes
+  labels: {}
+    # tags.datadoghq.com/env: "develop"
+    # tags.datadoghq.com/service: "nodejs-app"
+    # tags.datadoghq.com/version: "0.1.0"
+
+  #### Configure Datadog Log Collection with Kubernetes Annotations
+  ## https://docs.datadoghq.com/agent/kubernetes/log/?tab=kubernetes#examples---log-collection-from-file-configured-in-an-annotation
+  annotations: {}
+    # ad.datadoghq.com/nodejs.logs: '[{"type":"file","source":"nodejs","service":"nodejs-app", "path": "/logs/app/prod.log"}]'
+
+  # Configure the livenessProbe just TCP for now and readinessProbe just HTTP for now
+  livenessProbe:
+    enabled: false
+    type: tcp
+    initialDelaySeconds: 15
+    periodSeconds: 20
+
+  readinessProbe:
+    enabled: false
+    type: http
+    path: /
+    initialDelaySeconds: 15
+    periodSeconds: 20
+
+  # extraEnvironmentVars is a list of extra enviroment variables to set with the stateful set. These could be
+  # used to include variables required for auto-unseal.
+  extraEnvironmentVars: {}
+  #    ENVIRONMENT: PRODUCTION
+  extraSecretEnvironmentVars: {}
+  #     - envName: AWS_SECRET_ACCESS_KEY
+  #       secretName: project
+  #       secretKey: AWS_SECRET_ACCESS_KEY    
+
+  # extraVolumes is a list of extra volumes to mount in php container. 
+  extraVolumes: []
+    # - type: secret (or "configMap")
+    #   name: my-secret
+    #   path: null # default is `/usr/src/app/storage`
+    #   subPath: null
+  
+  resources: {}
+  # resources:
+  #   requests:
+  #     memory: 256Mi
+  #     cpu: 250m
+  #   limits:
+  #     memory: 256Mi
+  #     cpu: 250m
+  
+  nodeSelector: {}
+
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 50
+    targetMemoryUtilizationPercentage: 50
+  
+  terminationGracePeriodSeconds: 300
+    
+  ## Allowing use of ingress controllers
+  ingress:
+    enabled: false
+    ingressClassName: internal
+    labels: {}
+      # traffic: external
+    annotations: {}
+      # alb.ingress.kubernetes.io/target-type: ip
+      # alb.ingress.kubernetes.io/group.name: nodejs
+      # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+      # alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+    hosts:
+      - host: 
+        paths:
+          - 
+    tls:
+      enabled: false
+
+  # Enables a headless service to be used by
+  service:
+    enabled: false
+    # Port on which API server is listening
+    port: 443
+    # Target port to which the service should be mapped to
+    targetPort: 8080
+    # Extra annotations for the service definition. This should be a multi-line
+    # string formatted as a map of the annotations to apply to the service.
+    annotations: {}
+
+#######################    DEPLOYMENT SCOPES   ///   ARGO ROLLOUT SPECS      ########################################################
+
+rollout:
+
+  # Number of desired pods.
+  # Defaults to 1.  
+  replicas: 1
+  # Pause allows a user to manually pause a rollout at any time. A rollout  will not advance
+  # through its steps while it is manually paused, but HPA auto-scaling will still occur.
+  paused: true
+  # The number of old ReplicaSets to retain. Default 3
+  revisionHistoryLimit: 3
+  # Minimum number of seconds for which a newly created pod should be ready
+  # without any of its container crashing, for it to be considered available.  
+  minReadySeconds: 30
+  # The maximum time in seconds in which a rollout must make progress during
+  # an update, before it is considered to be failed. Default "600"  
+  progressDeadlineSeconds: 600
+  # Whether to abort the update when ProgressDeadlineSeconds
+  # is exceeded if analysis or experiment is not used. Default "false"  
+  progressDeadlineAbort: false
+
+  # Set "canary" or "blueGreen" strategy
+  strategy: blueGreen
+
+  blueGreen:
+    # The number of replicas to run under the preview service before the switchover. +optional
+    previewReplicaCount: ""
+    # Indicates if the rollout should automatically promote the new ReplicaSet 
+    # to the active service or enter a paused state. Default "false"
+    autoPromotionEnabled: false
+    # Automatically promotes the current ReplicaSet to active after the
+    # specified pause delay in seconds after the ReplicaSet becomes ready. +optional
+    autoPromotionSeconds: ""
+    # Adds a delay before scaling down the previous ReplicaSet
+    # A minimum of 30 seconds is recommended to ensure IP table propagation across the nodes in a cluster.
+    scaleDownDelaySeconds: 30
+    # Limits the number of old RS that can run at once before getting scaled
+    # down. +optional
+    scaleDownDelayRevisionLimit: ""
+    # Add a delay in second before scaling down the preview replicaset
+    # if update is aborted. 0 means not to scale down. Default is 30 second
+    abortScaleDownDelaySeconds: 30
+    # Anti Affinity configuration between desired and previous ReplicaSet.
+    # Only one must be specified. +optional
+    antiAffinity: {}
+      # requiredDuringSchedulingIgnoredDuringExecution: {}
+      # preferredDuringSchedulingIgnoredDuringExecution:
+      #   weight: 1
+    ingressPreview:
+    ## Enabled by default when strategy is "blueGreen". 
+      ingressClassName: ""
+      # This ingress use main ingress annotations by default.
+      annotations: {}
+      hosts:
+        - host: 
+          paths:
+            - /
+      pathType: Prefix
+      tls:
+        enabled: false            
+
+  canary: #https://argoproj.github.io/argo-rollouts/features/canary/
+    # Steps define sequence of steps to take during an update of the
+    # canary. Skipped upon initial deploy of a rollout. +optional       
+    steps:
+       # matchTrafficWeight returns to the default behavior of matching the canary traffic weight
+      - setCanaryScale:
+          matchTrafficWeight: true   
+      # Sets the ratio of canary ReplicaSet to 25%
+      - setWeight: 25
+      # Pauses the rollout for an hour. Supported units: s, m, h      
+      - pause:
+          duration: 5m
+      - setWeight: 50
+      # Pauses the rollout for an hour. Supported units: s, m, h      
+      - pause:
+          duration: 10m
+      # Sets the ratio of canary ReplicaSet to 100%
+      - setWeight: 100
+      # Pauses the rollout for an hour. Supported units: s, m, h      
+      - pause:
+          duration: 15m
+      # Pauses indefinitely until manually resumed
+      - pause: {} 
+    # The maximum number of pods that can be unavailable during the update. +optional 
+    maxUnavailable: ""
+    # The maximum number of pods that can be scheduled above the original number of pods. +optional
+    maxSurge: ""
+    # It is possible to dynamically reduce the scale of the stable ReplicaSet 
+    # during an update such that it scales down as the traffic weight increases to canary.
+    # Set true or false +optional
+    dynamicStableScale: ""
+    # Add a delay in second before scaling down the canary pods when update
+    # is aborted for canary strategy with traffic routing (not applicable for basic canary).
+    # 0 means canary pods are not scaled down. Default is 30 seconds.
+    abortScaleDownDelaySeconds: 30
+    # Adds a delay before scaling down the previous ReplicaSet when the
+    # canary strategy is used with traffic routing (default 30 seconds).    
+    scaleDownDelaySeconds: 30
+    # Limits the number of old RS that can run at one time before getting
+    # scaled down. Defaults to nil +optional
+    scaleDownDelayRevisionLimit: ""
