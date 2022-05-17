@@ -3,6 +3,19 @@ entries:
   argo-rollouts-demo:
   - apiVersion: v2
     appVersion: latest
+    created: "2022-05-17T22:50:56.629771259Z"
+    description: 'This Chart is to deploy an extendible architecture of a NodeJS application
+      over K8s with Argo Rollouts. '
+    digest: cd2b63d457bd97e5561c4f69647e85c0f417511ca9102496f0f389a9516b1f9e
+    keywords:
+    - argo-rollouts
+    - nodejs
+    name: argo-rollouts-demo
+    urls:
+    - https://github.com/craftech-io/helm-charts/releases/download/argo-rollouts-demo-0.0.4/argo-rollouts-demo-0.0.4.tgz
+    version: 0.0.4
+  - apiVersion: v2
+    appVersion: latest
     created: "2022-05-17T22:02:51.553560166Z"
     description: 'This Chart is to deploy an extendible architecture of a NodeJS application
       over K8s with Argo Rollouts. '
@@ -73,4 +86,4 @@ entries:
     urls:
     - https://github.com/craftech-io/helm-charts/releases/download/ingress-nginx-3.29.0-ingress-class/ingress-nginx-3.29.0-ingress-class.tgz
     version: 3.29.0-ingress-class
-generated: "2022-05-17T22:02:51.553577967Z"
+generated: "2022-05-17T22:50:56.629794259Z"
