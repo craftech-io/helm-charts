@@ -338,8 +338,5 @@ Sets BlueGreen Ingress Annotations
   {{- if .Values.rollout.blueGreen.ingressPreview.annotations }}
   annotations:
     {{- tpl .Values.rollout.blueGreen.ingressPreview.annotations . | nindent 4 }}
-  {{- else }}
-  annotations:
-    {{- tpl .Values.web.ingress.annotations . | nindent 4 }}
   {{- end }}
 {{- end -}}
