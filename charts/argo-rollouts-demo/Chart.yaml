@@ -1,6 +1,6 @@
 apiVersion: v2
 name: argo-rollouts-demo
-version: 0.0.3
+version: 0.0.4
 appVersion: latest
 keywords:
   - argo-rollouts
