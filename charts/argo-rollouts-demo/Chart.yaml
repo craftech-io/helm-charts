@@ -1,9 +1,9 @@
 apiVersion: v2
 name: argo-rollouts-demo
-version: 0.0.4
-appVersion: latest
+version: 0.0.5
+appVersion: 0.0.1
 keywords:
   - argo-rollouts
   - nodejs
 description: >
-    This Chart is to deploy an extendible architecture of a NodeJS application over K8s with Argo Rollouts. 
+    A Helm Chart for demo application over K8s with Argo Rollouts.

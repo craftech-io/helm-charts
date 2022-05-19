@@ -132,16 +132,16 @@ rollout:
   # through its steps while it is manually paused, but HPA auto-scaling will still occur.
   paused: true
   # The number of old ReplicaSets to retain. Default 3
-  revisionHistoryLimit: 3
+  revisionHistoryLimit: ""
   # Minimum number of seconds for which a newly created pod should be ready
   # without any of its container crashing, for it to be considered available.  
-  minReadySeconds: 30
+  minReadySeconds: ""
   # The maximum time in seconds in which a rollout must make progress during
   # an update, before it is considered to be failed. Default "600"  
-  progressDeadlineSeconds: 600
+  progressDeadlineSeconds: ""
   # Whether to abort the update when ProgressDeadlineSeconds
   # is exceeded if analysis or experiment is not used. Default "false"  
-  progressDeadlineAbort: false
+  progressDeadlineAbort: ""
 
   # Set "canary" or "blueGreen" strategy
   strategy: blueGreen
@@ -151,19 +151,19 @@ rollout:
     previewReplicaCount: ""
     # Indicates if the rollout should automatically promote the new ReplicaSet 
     # to the active service or enter a paused state. Default "false"
-    autoPromotionEnabled: false
+    autoPromotionEnabled: ""
     # Automatically promotes the current ReplicaSet to active after the
     # specified pause delay in seconds after the ReplicaSet becomes ready. +optional
     autoPromotionSeconds: ""
     # Adds a delay before scaling down the previous ReplicaSet
     # A minimum of 30 seconds is recommended to ensure IP table propagation across the nodes in a cluster.
-    scaleDownDelaySeconds: 30
+    scaleDownDelaySeconds: ""
     # Limits the number of old RS that can run at once before getting scaled
     # down. +optional
     scaleDownDelayRevisionLimit: ""
     # Add a delay in second before scaling down the preview replicaset
     # if update is aborted. 0 means not to scale down. Default is 30 second
-    abortScaleDownDelaySeconds: 30
+    abortScaleDownDelaySeconds: ""
     # Anti Affinity configuration between desired and previous ReplicaSet.
     # Only one must be specified. +optional
     antiAffinity: {}
@@ -217,10 +217,10 @@ rollout:
     # Add a delay in second before scaling down the canary pods when update
     # is aborted for canary strategy with traffic routing (not applicable for basic canary).
     # 0 means canary pods are not scaled down. Default is 30 seconds.
-    abortScaleDownDelaySeconds: 30
+    abortScaleDownDelaySeconds: ""
     # Adds a delay before scaling down the previous ReplicaSet when the
     # canary strategy is used with traffic routing (default 30 seconds).    
-    scaleDownDelaySeconds: 30
+    scaleDownDelaySeconds: ""
     # Limits the number of old RS that can run at one time before getting
     # scaled down. Defaults to nil +optional
     scaleDownDelayRevisionLimit: ""
