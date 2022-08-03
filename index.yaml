@@ -98,4 +98,15 @@ entries:
     urls:
     - https://github.com/craftech-io/helm-charts/releases/download/ingress-nginx-3.29.0-ingress-class/ingress-nginx-3.29.0-ingress-class.tgz
     version: 3.29.0-ingress-class
-generated: "2022-05-19T20:40:25.929410562Z"
+  kube-app:
+  - apiVersion: v2
+    appVersion: latest
+    created: "2022-08-03T21:06:51.124361674Z"
+    description: A reusable Helm chart for deploying Kubernetes apps
+    digest: 47d9ffa57c8cef156364af0efbada97e89ea93ba978f840ed1a1c7a5b6528c7d
+    name: kube-app
+    type: application
+    urls:
+    - https://github.com/craftech-io/helm-charts/releases/download/kube-app-0.1.0/kube-app-0.1.0.tgz
+    version: 0.1.0
+generated: "2022-08-03T21:06:51.124387575Z"
